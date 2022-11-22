@@ -61,7 +61,7 @@ function solution(n, paths, gates, summits) {
         gates[i],
         summits,
         -1,
-        0,
+        [gates[i]],
       );
       if (re[0] > 0) {
         if (answer[0] == 0 || answer[1] > re[1]) answer = re.slice();
@@ -69,6 +69,7 @@ function solution(n, paths, gates, summits) {
       }
 
       j++;
+      console.log('');
       console.log('answer = ' + answer, ' re = ' + re);
     }
   }
@@ -76,9 +77,9 @@ function solution(n, paths, gates, summits) {
 }
 
 function time_check(connect, path, gate, summits, check, dep) {
-  if (dep != 0) console.log('-');
-  console.log(path[0]);
-  if (dep >= connect.length * 2) return [-2, -2];
+  // dep++;
+  dep.push(path[0]);
+  if (dep.length >= connect.length * 2) return [-2, -2, 1];
   for (let s = 0; s < summits.length; s++) {
     if (check == -1) {
       if (path[0] == summits[s]) check = summits[s];
@@ -86,40 +87,56 @@ function time_check(connect, path, gate, summits, check, dep) {
       return [-1, path[1]];
     }
   }
-  if (path[0] == gate) return [check, path[1]];
-  else {
+  if (path[0] == gate) {
+    console.log('dep = ' + dep);
+    return [check, path[1], 1];
+  } else {
     var j = 0;
     var p = path[0] - 1;
     var re = 0;
-    //console.log(connect[p].length);
+    var answer = [-1, -1];
+    var dep2 = dep.slice();
     while (connect[p][j]) {
-      //console.log(connect[p][j]);
-      //if (connect[p][j][0] != gate) //gate가 아니면서
-      //{
-      //check != -1일때 산봉우리도 아니어야 재귀.
+      console.log('where=' + connect[p][j][0]);
       if (check != -1) {
-        for (s = 0; s < summits.length; s++)
-          if (connect[p][j] == summits[s]) return [-1, connect[p][j][1]];
-      }
-      re = time_check(
-        connect,
-        connect[p][j],
-        gate,
-        summits,
-        check,
-        ++dep,
-      ).slice();
+        let b = 0;
+        for (let s = 0; s < summits.length; s++) {
+          if (connect[p][j] == summits[s]) {
+            re = [-1, -1];
+            b = 1;
+            break;
+          }
+        }
+        if (b == 0)
+          re = time_check(
+            connect,
+            connect[p][j],
+            gate,
+            summits,
+            check,
+            dep2,
+          ).slice();
+      } else
+        re = time_check(
+          connect,
+          connect[p][j],
+          gate,
+          summits,
+          check,
+          dep2,
+        ).slice();
+      //if (re.length > 2) return [re[0], re[1]];
       if (re[0] > 0) {
-        // issue : 여기서 return이 나오면 전체 탐색이 안됨. 근데도 무한 재귀중이네
-        if (re[1] > path[1]) return [re[0], path[1]];
-        else return [re[0], re[1]];
+        if (re[1] > path[1]) re = [re[0], path[1]];
+        else re = [re[0], re[1]];
       } else {
-        if (re[1] > path[1]) return [-1, path[1]];
-        else return [-1, re[1]];
+        if (re[1] > path[1]) re = [-1, path[1]];
+        else re = [-1, re[1]];
       }
-      //}
+      if (re[0] > answer[0]) answer = re.slice();
+      else if (re[0] == answer[0] && re[1] > answer[1]) answer = re.slice();
       j++;
     }
-    return [-1, -1];
+    return answer;
   }
 }
