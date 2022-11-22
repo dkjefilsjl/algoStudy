@@ -53,7 +53,7 @@ function solution(n, paths, gates, summits) {
   }
   for (let i = 0; i < gates.length; i++) {
     let j = 0;
-    console.log('gates = ' + gates[i]);
+    //console.log("gates = " + gates[i]);
     while (connect[gates[i] - 1][j]) {
       var re = time_check(
         connect,
@@ -62,22 +62,24 @@ function solution(n, paths, gates, summits) {
         summits,
         -1,
         [gates[i]],
+        0,
       );
       if (re[0] > 0) {
-        if (answer[0] == 0 || answer[1] > re[1]) answer = re.slice();
-        if (answer[1] == re[1] && answer[0] > re[0]) answer = re.slice();
+        if (answer[0] == 0 || answer[1] > re[1]) answer = [re[0], re[1]];
+        if (answer[1] == re[1] && answer[0] > re[0]) answer = [re[0], re[1]];
       }
 
       j++;
-      console.log('');
-      console.log('answer = ' + answer, ' re = ' + re);
+      //console.log("");
+      //console.log("answer = " + answer, " re = " + re);
     }
   }
   return answer;
 }
 
-function time_check(connect, path, gate, summits, check, dep) {
+function time_check(connect, path, gate, summits, check, dep, ans) {
   // dep++;
+  if (ans < path[1]) ans = path[1];
   dep.push(path[0]);
   if (dep.length >= connect.length * 2) return [-2, -2, 1];
   for (let s = 0; s < summits.length; s++) {
@@ -88,33 +90,52 @@ function time_check(connect, path, gate, summits, check, dep) {
     }
   }
   if (path[0] == gate) {
-    console.log('dep = ' + dep);
-    return [check, path[1], 1];
+    //console.log("dep = " + dep);
+    return [check, ans, 1];
   } else {
     var j = 0;
     var p = path[0] - 1;
     var re = 0;
-    var answer = [-1, -1];
     var dep2 = dep.slice();
+    var dl = dep.length;
+    var answer = [-1, -1];
+    //console.log("");
     while (connect[p][j]) {
-      console.log('where=' + connect[p][j][0]);
-      if (check != -1) {
+      //console.log("where=" + connect[p][j][0]);
+      // process.stdout.write("[" + connect[p][j] + "," + dep[dl-2] + "]");
+      //process.stdout.write(dep[dl-2]+", ");
+      if (connect[p][j][0] == dep[dl - 2]) {
+        //console.log("h = " + connect[p][j][0]);
+        //console.log("here " + connect[p][j], dep[dl-2]);
         let b = 0;
-        for (let s = 0; s < summits.length; s++) {
-          if (connect[p][j] == summits[s]) {
-            re = [-1, -1];
+        for (let s = 0; s < summits.length; s++)
+          if (path[0] == summits[s]) {
             b = 1;
             break;
           }
+        if (connect[p][1] && b != 1) {
+          j++;
+          continue;
         }
-        if (b == 0)
+      }
+      if (check != -1) {
+        let b2 = 0;
+        for (let s = 0; s < summits.length; s++) {
+          if (connect[p][j][0] == summits[s]) {
+            re = [-1, -1];
+            b2 = 1;
+            break;
+          }
+        }
+        if (b2 == 0)
           re = time_check(
             connect,
             connect[p][j],
             gate,
             summits,
             check,
-            dep2,
+            dep.slice(),
+            ans,
           ).slice();
       } else
         re = time_check(
@@ -123,18 +144,30 @@ function time_check(connect, path, gate, summits, check, dep) {
           gate,
           summits,
           check,
-          dep2,
+          dep.slice(),
+          ans,
         ).slice();
-      //if (re.length > 2) return [re[0], re[1]];
+      if (re.length > 2) {
+        //console.log("answer = " + answer, "Re = " + re, "ans = " + ans);
+        if (answer[0] == -1) answer = re;
+        if (answer[1] > re[1]) answer = re;
+      }
       if (re[0] > 0) {
-        if (re[1] > path[1]) re = [re[0], path[1]];
+        if (re[1] < path[1]) re = [re[0], path[1]];
         else re = [re[0], re[1]];
       } else {
-        if (re[1] > path[1]) re = [-1, path[1]];
+        if (re[1] < path[1]) re = [-1, path[1]];
         else re = [-1, re[1]];
       }
-      if (re[0] > answer[0]) answer = re.slice();
-      else if (re[0] == answer[0] && re[1] > answer[1]) answer = re.slice();
+      if (answer.length <= 2) {
+        if (re[0] > answer[0]) answer = [re[0], re[1]];
+        else if (re[0] == answer[0] && re[1] > answer[1])
+          answer = [re[0], re[1]];
+      } else {
+        if (re[0] > answer[0]) answer = [re[0], re[1]];
+        else if (re[0] == answer[0] && re[1] < answer[1])
+          answer = [re[0], re[1]];
+      }
       j++;
     }
     return answer;
