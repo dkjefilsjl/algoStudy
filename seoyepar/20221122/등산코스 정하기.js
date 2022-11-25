@@ -11,8 +11,7 @@
         5. 만일 값이 같으면 더 작은 숫자의 산봉우리의 내용을 저장.
         6. 값이 작으면 해당 산봉우리 내용으로 저장.
     }
-    */
-function solution(n, paths, gates, summits) {
+    */ function solution(n, paths, gates, summits) {
   var answer = [0, 0];
   var connect = [];
   var tmp = [];
@@ -29,7 +28,6 @@ function solution(n, paths, gates, summits) {
       cnt++;
       tmp_j = j;
       j = j + tmp[j][0] + 1;
-      //console.log("tmp = " + tmp, "tmp[j] = " + tmp[j], "j = " + j);
       if (tmp.length <= j) tmp.push([paths[i][1], paths[i][2]]);
       else if (cnt == paths[i][0]) {
         tmp.splice(j, 0, [paths[i][1], paths[i][2]]);
@@ -45,7 +43,6 @@ function solution(n, paths, gates, summits) {
       if (check == 2) break;
     }
   }
-  // console.log(paths.length, tmp.length);
   let i = 0;
   while (tmp[i][0] != 0) {
     connect.push(tmp.splice(i + 1, tmp[i][0]));
@@ -53,7 +50,6 @@ function solution(n, paths, gates, summits) {
   }
   for (let i = 0; i < gates.length; i++) {
     let j = 0;
-    //console.log("gates = " + gates[i]);
     while (connect[gates[i] - 1][j]) {
       var re = time_check(
         connect,
@@ -78,19 +74,20 @@ function solution(n, paths, gates, summits) {
 }
 
 function time_check(connect, path, gate, summits, check, dep, ans) {
-  // dep++;
   if (ans < path[1]) ans = path[1];
   dep.push(path[0]);
   if (dep.length >= connect.length * 2) return [-2, -2, 1];
   for (let s = 0; s < summits.length; s++) {
     if (check == -1) {
-      if (path[0] == summits[s]) check = summits[s];
+      if (path[0] == summits[s]) {
+        check = summits[s];
+        return [check, ans, 1];
+      }
     } else if (path[0] == summits[s]) {
       return [-1, path[1]];
     }
   }
   if (path[0] == gate) {
-    //console.log("dep = " + dep);
     return [check, ans, 1];
   } else {
     var j = 0;
@@ -99,56 +96,27 @@ function time_check(connect, path, gate, summits, check, dep, ans) {
     var dep2 = dep.slice();
     var dl = dep.length;
     var answer = [-1, -1];
-    //console.log("");
     while (connect[p][j]) {
-      //console.log("where=" + connect[p][j][0]);
-      // process.stdout.write("[" + connect[p][j] + "," + dep[dl-2] + "]");
-      //process.stdout.write(dep[dl-2]+", ");
       if (connect[p][j][0] == dep[dl - 2]) {
-        //console.log("h = " + connect[p][j][0]);
-        //console.log("here " + connect[p][j], dep[dl-2]);
-        let b = 0;
-        for (let s = 0; s < summits.length; s++)
-          if (path[0] == summits[s]) {
-            b = 1;
-            break;
-          }
-        if (connect[p][1] && b != 1) {
+        if (connect[p][1]) {
           j++;
           continue;
         }
       }
       if (check != -1) {
-        let b2 = 0;
-        for (let s = 0; s < summits.length; s++) {
-          if (connect[p][j][0] == summits[s]) {
-            re = [-1, -1];
-            b2 = 1;
-            break;
-          }
-        }
-        if (b2 == 0)
-          re = time_check(
-            connect,
-            connect[p][j],
-            gate,
-            summits,
-            check,
-            dep.slice(),
-            ans,
-          ).slice();
-      } else
-        re = time_check(
-          connect,
-          connect[p][j],
-          gate,
-          summits,
-          check,
-          dep.slice(),
-          ans,
-        ).slice();
+        j++;
+        continue;
+      }
+      re = time_check(
+        connect,
+        connect[p][j],
+        gate,
+        summits,
+        check,
+        dep.slice(),
+        ans,
+      ).slice();
       if (re.length > 2) {
-        //console.log("answer = " + answer, "Re = " + re, "ans = " + ans);
         if (answer[0] == -1) answer = re;
         if (answer[1] > re[1]) answer = re;
       }
