@@ -14,8 +14,8 @@ int solution(vector<vector<int> > maps)
     
     for (int i = 0; i < n; i++)
         visited[i] = new int[m]();
-    //if ((maps[n - 1][m - 2] == 0) && (maps[n - 2][m - 1] == 0)) // 출구 없는 경우
-      //  return -1;
+    if ((maps[n - 1][m - 2] == 0) && (maps[n - 2][m - 1] == 0)) // 출구 없는 경우
+        return -1;
 
     q.push(make_pair(0,0));
     visited[0][0] = 1;
